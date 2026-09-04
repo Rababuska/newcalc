@@ -701,29 +701,29 @@
                     <div v-show="savedItems.length > 0">
                         <table ref="copyTable" width="100%" border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: 'Times New Roman', Times, serif; font-size: 14px;">
                             <colgroup>
-                                <col width="4%">
+                                <col width="5%">
                                 <col width="16%">
-                                <col width="32%">
+                                <col width="33%">
                                 <col width="10%">
                                 <col width="12%">
                                 <col width="12%">
-                                <col width="10%">
-                                <col width="4%" class="no-copy">
+                                <col width="12%">
+                                <col width="75px" class="no-copy">
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th colspan="8" align="center" style="border: 1px solid #000; padding: 10px; text-align: center; background-color: #f2f2f2; font-size: 16px;">
+                                    <th colspan="8" align="center" style="border: 1px solid #000; padding: 10px; text-align: center; background-color: #f2f2f2; font-size: 16px; color: #000000; text-decoration: none;">
                                         <strong>КП {{ currentDateFormatted }} {{ companyName ? companyName.toUpperCase() : 'БЕЗ НАЗВАНИЯ' }}</strong>
                                     </th>
                                 </tr>
                                 <tr style="background-color: #f9f9f9;">
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">№</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Наименование</th>
-                                    <th align="left" style="border: 1px solid #000; padding: 6px; text-align: left;">Данные</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Кол-во / шт</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Стоимость за единицу / теңге</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Итого / теңге</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Срок / рабочие дни</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">№</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Наименование</th>
+                                    <th align="left" style="border: 1px solid #000; padding: 6px; text-align: left; color: #000000; text-decoration: none;">Данные</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Кол-во / шт</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Стоимость за единицу / теңге</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Итого / теңге</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Срок / рабочие дни</th>
                                     <th align="center" class="no-copy" style="border: 1px solid #000; padding: 6px; text-align: center; width: 75px;">Действия</th>
                                 </tr>
                             </thead>
@@ -781,13 +781,13 @@
                             </tbody>
                             <tfoot>
                                 <tr style="background-color: #f9f9f9; font-weight: bold;">
-                                    <td colspan="5" align="right" style="border: 1px solid #000; padding: 6px; text-align: right;">
+                                    <td colspan="5" align="right" style="border: 1px solid #000; padding: 6px; text-align: right; color: #000000; text-decoration: none;">
                                         ИТОГО ПО ЗАКАЗУ:
                                     </td>
-                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">
+                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">
                                         {{ grandTotal }}
                                     </td>
-                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">
+                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">
                                         {{ maxDeliveryTime }}
                                     </td>
                                     <td class="no-copy" style="border: 1px solid #000; padding: 6px;"></td>
@@ -943,7 +943,6 @@ var app = new Vue({
 
         isSyncing: false,
 
-        // Пароли замаскированы в хеш-токены (при Ctrl+U открытых цифр нет)
         managers: [
             { id: 'm_igor', name: 'Игорь', token: 352536 },
             { id: 'm_aziz', name: 'Азиз', token: 522918 },
@@ -1686,7 +1685,6 @@ var app = new Vue({
         }
     },
     methods: {
-        // Проверка пароля по токену (чистый ввод менеджера маскируется)
         checkPassword: function() {
             let manager = this.managers.find(m => m.id === this.selectedManagerId);
             if (!manager) return;
@@ -1931,7 +1929,7 @@ var app = new Vue({
             it.title = title;
             it.desc = desc;
             it.circulation = this.selected.circulation;
-            it.one_total = this.result_price.one_total;
+            it.one_total = this.result_price.one_total,
             it.total = this.result_price.total;
             it.delivery = this.delivery_time;
             it.specData = JSON.parse(JSON.stringify(this.selected));
@@ -1994,26 +1992,66 @@ var app = new Vue({
             }
         },
 
+        // УЛУЧШЕННОЕ КОПИРОВАНИЕ ДЛЯ WORD И EXCEL С ПОЛНОЙ БЛОКИРОВКОЙ СИНЕГО ТЕКСТА
         copyTable: function(type) {
             if (this.savedItems.length === 0) return;
 
             let original = this.$refs.copyTable;
             let clone = original.cloneNode(true);
+            
+            // Удаляем колонку действий
             let noCopyElements = clone.querySelectorAll('.no-copy');
             noCopyElements.forEach(el => el.remove());
 
+            // Заголовок объединяем строго на 7 колонок
             let mainHeader = clone.querySelector('thead tr:first-child th');
             if (mainHeader) {
                 mainHeader.setAttribute('colspan', '7');
             }
 
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px';
-            clone.style.top = '0';
-            document.body.appendChild(clone);
+            // Жёстко задаём ширину колонок в процентах
+            let colWidths = ['5%', '16%', '33%', '10%', '12%', '12%', '12%'];
+            let ths = clone.querySelectorAll('thead tr:nth-child(2) th');
+            ths.forEach((th, i) => {
+                if (colWidths[i]) th.setAttribute('width', colWidths[i]);
+            });
+
+            // Очищаем ВСЕ элементы от веб-классов и форсируем строгий чёрный цвет без подчёркиваний
+            let allElements = clone.querySelectorAll('*');
+            allElements.forEach(el => {
+                el.removeAttribute('contenteditable');
+                el.classList.remove('editable-cell', 'clickable-row-num', 'bg-warning');
+                el.style.color = '#000000';
+                el.style.textDecoration = 'none';
+                el.style.fontFamily = "'Times New Roman', Times, serif";
+
+                if (el.tagName === 'TH' || el.tagName === 'TD') {
+                    el.style.border = '1px solid #000000';
+                    el.style.color = '#000000';
+                    el.style.textDecoration = 'none';
+                    el.style.fontFamily = "'Times New Roman', Times, serif";
+                }
+            });
+
+            clone.style.borderCollapse = 'collapse';
+            clone.style.width = '100%';
+            clone.style.color = '#000000';
+            clone.style.textDecoration = 'none';
+            clone.style.fontFamily = "'Times New Roman', Times, serif";
+
+            // Оборачиваем в контейнер, сбрасывающий родительские стили Word (гиперссылки)
+            let wrapper = document.createElement('div');
+            wrapper.style.color = '#000000';
+            wrapper.style.textDecoration = 'none';
+            wrapper.style.fontFamily = "'Times New Roman', Times, serif";
+            wrapper.style.position = 'absolute';
+            wrapper.style.left = '-9999px';
+            wrapper.style.top = '0';
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
 
             let range = document.createRange();
-            range.selectNode(clone);
+            range.selectNode(wrapper);
             let sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
@@ -2023,7 +2061,7 @@ var app = new Vue({
                 console.error(err);
             }
             sel.removeAllRanges();
-            document.body.removeChild(clone);
+            document.body.removeChild(wrapper);
 
             let summaryTitles = this.savedItems.map(i => `${i.title} (${i.circulation} шт)`).join(', ');
             let targetId = this.currentLoadedHistoryId || Date.now();
