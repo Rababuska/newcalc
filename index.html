@@ -772,7 +772,6 @@
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         {{ item.delivery }}
                                     </td>
-                                    <!-- КНОПКИ УПРАВЛЕНИЯ СПРАВА В СТРОКЕ (НЕ КОПИРУЮТСЯ В WORD) -->
                                     <td align="center" valign="middle" class="no-copy" style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: middle; white-space: nowrap;">
                                         <button class="btn btn-primary btn-sm btn-action-row mr-1" title="Править в калькуляторе" @click="editItem(idx)">✏️</button>
                                         <button class="btn btn-outline-danger btn-sm btn-action-row" title="Удалить строку" @click="removeItem(idx)">✕</button>
@@ -922,8 +921,7 @@ Vue.component('paper-selector', {
 var app = new Vue({
     el: '#app',
     data: {
-        // ВСТАВЬТЕ СЮДА URL РАЗВЕРТЫВАНИЯ ИЗ APPS SCRIPT:
-        googleScriptUrl: 'https://script.google.com/macros/s/AKfycbzsBY3ZFVSjD24mpL02CQbuJohjVW97iUxP6GuZDeIOmzLoJ_zb__9wzMbBVH0KPDLx/exec', 
+        googleScriptUrl: '', 
 
         isSyncing: false,
 
@@ -1697,7 +1695,6 @@ var app = new Vue({
             localStorage.setItem('poly_history_' + this.currentManager.id, JSON.stringify(this.userHistory));
         },
 
-        // СИНХРОНИЗАЦИЯ С GOOGLE SHEETS
         syncWithGoogleSheets: function() {
             if (!this.googleScriptUrl || !this.currentManager.id) return;
             this.isSyncing = true;
@@ -1738,19 +1735,27 @@ var app = new Vue({
                 spec.good = 'sticker';
             }
 
-            let dimMatch = desc.match(/(\d+)\s*[xх×*]\s*(\d+)\s*мм/i);
-            if (dimMatch) {
-                spec.custom_width = parseInt(dimMatch[1]);
-                spec.custom_height = parseInt(dimMatch[2]);
-                if (spec.good === 'leaflet' || spec.good === 'sticker') {
-                    spec.size = 'custom';
-                }
-            } else {
-                for (let sKey in this.sizes.leaflet) {
-                    let sName = this.sizes.leaflet[sKey].name.toLowerCase();
-                    if (desc.toLowerCase().includes(sKey) || desc.toLowerCase().includes(sName.split(' ')[0])) {
+            // Проверка стандартных размеров перед переключением в custom
+            let foundStandard = false;
+            if (this.sizes[spec.good]) {
+                for (let sKey in this.sizes[spec.good]) {
+                    if (sKey === 'custom') continue;
+                    let sName = this.sizes[spec.good][sKey].name.toLowerCase();
+                    if (desc.toLowerCase().includes(sName.split(' ')[0])) {
                         spec.size = sKey;
+                        foundStandard = true;
                         break;
+                    }
+                }
+            }
+
+            if (!foundStandard) {
+                let dimMatch = desc.match(/(\d+)\s*[xх×*]\s*(\d+)\s*мм/i);
+                if (dimMatch) {
+                    spec.custom_width = parseInt(dimMatch[1]);
+                    spec.custom_height = parseInt(dimMatch[2]);
+                    if (spec.good === 'leaflet' || spec.good === 'sticker') {
+                        spec.size = 'custom';
                     }
                 }
             }
@@ -1895,7 +1900,7 @@ var app = new Vue({
             it.title = title;
             it.desc = desc;
             it.circulation = this.selected.circulation;
-            it.one_total = this.result_price.one_total;
+            it.one_total = this.result_price.one_total,
             it.total = this.result_price.total;
             it.delivery = this.delivery_time;
             it.specData = JSON.parse(JSON.stringify(this.selected));
@@ -2016,7 +2021,6 @@ var app = new Vue({
 
             this.saveUserHistory();
 
-            // Отправка в Google Таблицу
             if (this.googleScriptUrl) {
                 this.isSyncing = true;
                 fetch(this.googleScriptUrl, {
@@ -2157,15 +2161,15 @@ var app = new Vue({
         isLaminated: function(lamKey) {
             return this.laminations[lamKey] ? this.laminations[lamKey].name.toLowerCase().includes('ламинация') : false;
         },
-        getItemSize: function() {
-            let isSingleCut = (this.selected.good === 'business-card' || this.selected.good === 'leaflet' || this.selected.good === 'sticker') && this.selected.cut_type === 'single';
-            let currentBleeds = isSingleCut ? 0 : this.config.bleeds;
 
+        // ВОЗВРАТ ЧИСТОГО ОБРЕЗНОГО РАЗМЕРА (ВЫЛЕТЫ СЧИТАЮТСЯ ВНУТРИ CALCYIELD)
+        getItemSize: function() {
             if (this.selected.good === 'business-card' || ((this.selected.good === 'leaflet' || this.selected.good === 'sticker') && this.selected.size === 'custom')) {
-                return { w: this.selected.custom_width + currentBleeds, h: this.selected.custom_height + currentBleeds };
+                return { w: this.selected.custom_width, h: this.selected.custom_height };
             }
-            return { w: this.sizes[this.selected.good][this.selected.size].w + currentBleeds, h: this.sizes[this.selected.good][this.selected.size].h + currentBleeds };
+            return { w: this.sizes[this.selected.good][this.selected.size].w, h: this.sizes[this.selected.good][this.selected.size].h };
         },
+
         calcYield: function(netW, netH, paperW, paperH, gapX, gapY, outerBleed) {
             let usableW = paperW - this.config.margins;
             let usableH = paperH - this.config.margins;
