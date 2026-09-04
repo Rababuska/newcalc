@@ -89,7 +89,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 <div id="app" class="mt-4">
 
     <!-- ЭКРАН ВХОДА ДЛЯ МЕНЕДЖЕРОВ -->
@@ -105,15 +105,15 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Пароль</label>
+                    <label>ПИН-код</label>
                     <input type="password" 
                            class="form-control" 
                            :class="{'is-invalid': authError}" 
                            v-model="enteredPassword" 
-                           placeholder="Введите пароль..." 
+                           placeholder="Введите ПИН-код..." 
                            autofocus>
                     <div class="invalid-feedback" v-if="authError">
-                        Неверный пароль. Попробуйте снова.
+                        Неверный ПИН-код. Попробуйте снова.
                     </div>
                 </div>
                 <div class="custom-control custom-checkbox mb-4">
@@ -772,6 +772,7 @@
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         {{ item.delivery }}
                                     </td>
+                                    <!-- КНОПКИ УПРАВЛЕНИЯ СПРАВА В СТРОКЕ (НЕ КОПИРУЮТСЯ В WORD) -->
                                     <td align="center" valign="middle" class="no-copy" style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: middle; white-space: nowrap;">
                                         <button class="btn btn-primary btn-sm btn-action-row mr-1" title="Править в калькуляторе" @click="editItem(idx)">✏️</button>
                                         <button class="btn btn-outline-danger btn-sm btn-action-row" title="Удалить строку" @click="removeItem(idx)">✕</button>
@@ -857,6 +858,22 @@
 </div>
 
 <script>
+// Блокировка вызова исходного кода и DevTools (Ctrl+U, F12, Ctrl+Shift+I)
+document.addEventListener('keydown', function(e) {
+    if (e.keyCode === 123) { // F12
+        e.preventDefault();
+        return false;
+    }
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 117)) { // Ctrl+U
+        e.preventDefault();
+        return false;
+    }
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) { // Ctrl+Shift+I / J / C
+        e.preventDefault();
+        return false;
+    }
+});
+
 Vue.component('paper-selector', {
     props: ['value', 'papers', 'isSticker'],
     data: function() {
@@ -921,17 +938,25 @@ Vue.component('paper-selector', {
 var app = new Vue({
     el: '#app',
     data: {
-        googleScriptUrl: 'https://script.google.com/macros/s/AKfycbzsBY3ZFVSjD24mpL02CQbuJohjVW97iUxP6GuZDeIOmzLoJ_zb__9wzMbBVH0KPDLx/exec', 
+        // ВСТАВЬТЕ СЮДА URL РАЗВЕРТЫВАНИЯ ИЗ APPS SCRIPT:
+        googleScriptUrl: '', 
 
         isSyncing: false,
 
+        // Пароли замаскированы в хеш-токены (при Ctrl+U открытых цифр нет)
         managers: [
-            { id: 'm1', name: 'Менеджер 1', password: '111' },
-            { id: 'm2', name: 'Менеджер 2', password: '222' },
-            { id: 'm3', name: 'Менеджер 3', password: '333' },
-            { id: 'admin', name: 'Руководитель', password: 'calc2026' }
+            { id: 'm_igor', name: 'Игорь', token: 352536 },
+            { id: 'm_aziz', name: 'Азиз', token: 522918 },
+            { id: 'm_nadezhda', name: 'Надежда', token: 433201 },
+            { id: 'm_sergey', name: 'Сергей', token: 601612 },
+            { id: 'm_zhibek', name: 'Жибек', token: 271214 },
+            { id: 'm_ksenia', name: 'Ксения', token: 473935 },
+            { id: 'm_valeria', name: 'Валерия', token: 684832 },
+            { id: 'm_liya', name: 'Лия', token: 193323 },
+            { id: 'm_dmitry', name: 'Дмитрий', token: 548906 },
+            { id: 'admin', name: 'Руководитель', token: 621979 }
         ],
-        selectedManagerId: 'm1',
+        selectedManagerId: 'm_igor',
         enteredPassword: '',
         rememberMe: false,
         isAuthenticated: false,
@@ -1145,6 +1170,7 @@ var app = new Vue({
                 this.currentManager = found;
                 this.isAuthenticated = true;
                 this.loadUserHistory();
+                this.syncWithGoogleSheets();
             }
         }
     },
@@ -1660,9 +1686,15 @@ var app = new Vue({
         }
     },
     methods: {
+        // Проверка пароля по токену (чистый ввод менеджера маскируется)
         checkPassword: function() {
             let manager = this.managers.find(m => m.id === this.selectedManagerId);
-            if (manager && this.enteredPassword === manager.password) {
+            if (!manager) return;
+
+            let entered = parseInt(this.enteredPassword.trim());
+            let computedToken = (entered * 73 + 19);
+
+            if (computedToken === manager.token) {
                 this.currentManager = manager;
                 this.isAuthenticated = true;
                 this.authError = false;
@@ -1735,7 +1767,6 @@ var app = new Vue({
                 spec.good = 'sticker';
             }
 
-            // Проверка стандартных размеров перед переключением в custom
             let foundStandard = false;
             if (this.sizes[spec.good]) {
                 for (let sKey in this.sizes[spec.good]) {
@@ -1900,7 +1931,7 @@ var app = new Vue({
             it.title = title;
             it.desc = desc;
             it.circulation = this.selected.circulation;
-            it.one_total = this.result_price.one_total,
+            it.one_total = this.result_price.one_total;
             it.total = this.result_price.total;
             it.delivery = this.delivery_time;
             it.specData = JSON.parse(JSON.stringify(this.selected));
@@ -2161,15 +2192,12 @@ var app = new Vue({
         isLaminated: function(lamKey) {
             return this.laminations[lamKey] ? this.laminations[lamKey].name.toLowerCase().includes('ламинация') : false;
         },
-
-        // ВОЗВРАТ ЧИСТОГО ОБРЕЗНОГО РАЗМЕРА (ВЫЛЕТЫ СЧИТАЮТСЯ ВНУТРИ CALCYIELD)
         getItemSize: function() {
             if (this.selected.good === 'business-card' || ((this.selected.good === 'leaflet' || this.selected.good === 'sticker') && this.selected.size === 'custom')) {
                 return { w: this.selected.custom_width, h: this.selected.custom_height };
             }
             return { w: this.sizes[this.selected.good][this.selected.size].w, h: this.sizes[this.selected.good][this.selected.size].h };
         },
-
         calcYield: function(netW, netH, paperW, paperH, gapX, gapY, outerBleed) {
             let usableW = paperW - this.config.margins;
             let usableH = paperH - this.config.margins;
