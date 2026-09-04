@@ -672,11 +672,11 @@
                 </tbody>
             </table>
 
-            <!-- СЕКЦИЯ СОХРАНЕННЫХ ПОЗИЦИЙ ДЛЯ КОПИРОВАНИЯ В WORD / EXCEL -->
+            <!-- СЕКЦИЯ СОХРАНЕННЫХ ПОЗИЦИЙ НА ЭКРАНЕ -->
             <div class="mt-5 mb-4" ref="tableSection">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div>
-                        <h5 class="text-secondary d-inline-block mr-2 mb-0">Таблица для копирования (Word / Excel)</h5>
+                        <h5 class="text-secondary d-inline-block mr-2 mb-0">Таблица коммерческого предложения</h5>
                         <span class="badge badge-info" style="font-size: 0.9em;">Позиций: {{ savedItems.length }}</span>
                         <small class="text-muted ml-2 font-italic d-none d-md-inline">(кликните по тексту для быстрой правки)</small>
                     </div>
@@ -687,8 +687,8 @@
                         <button class="btn btn-sm btn-outline-danger shadow-sm mr-2" @click="clearTable" v-if="savedItems.length > 0">
                             Очистить всё
                         </button>
-                        <button class="btn btn-sm btn-primary shadow-sm" @click="copyTable('table')" :disabled="savedItems.length === 0">
-                            💾 Скопировать КП и сохранить в историю
+                        <button class="btn btn-sm btn-primary shadow-sm" @click="copyTable" :disabled="savedItems.length === 0">
+                            📋 Скопировать КП для Word / Excel
                         </button>
                     </div>
                 </div>
@@ -699,32 +699,32 @@
                     </div>
 
                     <div v-show="savedItems.length > 0">
-                        <table ref="copyTable" width="100%" border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: 'Times New Roman', Times, serif; font-size: 14px;">
+                        <table width="100%" border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: 'Times New Roman', Times, serif; font-size: 14px;">
                             <colgroup>
-                                <col width="5%">
+                                <col width="4%">
                                 <col width="16%">
-                                <col width="33%">
+                                <col width="32%">
                                 <col width="10%">
                                 <col width="12%">
                                 <col width="12%">
-                                <col width="12%">
-                                <col width="75px" class="no-copy">
+                                <col width="10%">
+                                <col width="4%">
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th colspan="8" align="center" style="border: 1px solid #000; padding: 10px; text-align: center; background-color: #f2f2f2; font-size: 16px; color: #000000; text-decoration: none;">
+                                    <th colspan="8" align="center" style="border: 1px solid #000; padding: 10px; text-align: center; background-color: #f2f2f2; font-size: 16px; color: #000000;">
                                         <strong>КП {{ currentDateFormatted }} {{ companyName ? companyName.toUpperCase() : 'БЕЗ НАЗВАНИЯ' }}</strong>
                                     </th>
                                 </tr>
                                 <tr style="background-color: #f9f9f9;">
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">№</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Наименование</th>
-                                    <th align="left" style="border: 1px solid #000; padding: 6px; text-align: left; color: #000000; text-decoration: none;">Данные</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Кол-во / шт</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Стоимость за единицу / теңге</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Итого / теңге</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">Срок / рабочие дни</th>
-                                    <th align="center" class="no-copy" style="border: 1px solid #000; padding: 6px; text-align: center; width: 75px;">Действия</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">№</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Наименование</th>
+                                    <th align="left" style="border: 1px solid #000; padding: 6px; text-align: left;">Данные</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Кол-во / шт</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Стоимость за единицу / теңге</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Итого / теңге</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Срок / рабочие дни</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; width: 75px;">Действия</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -772,8 +772,7 @@
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         {{ item.delivery }}
                                     </td>
-                                    <!-- КНОПКИ УПРАВЛЕНИЯ СПРАВА В СТРОКЕ (НЕ КОПИРУЮТСЯ В WORD) -->
-                                    <td align="center" valign="middle" class="no-copy" style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: middle; white-space: nowrap;">
+                                    <td align="center" valign="middle" style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: middle; white-space: nowrap;">
                                         <button class="btn btn-primary btn-sm btn-action-row mr-1" title="Править в калькуляторе" @click="editItem(idx)">✏️</button>
                                         <button class="btn btn-outline-danger btn-sm btn-action-row" title="Удалить строку" @click="removeItem(idx)">✕</button>
                                     </td>
@@ -781,16 +780,16 @@
                             </tbody>
                             <tfoot>
                                 <tr style="background-color: #f9f9f9; font-weight: bold;">
-                                    <td colspan="5" align="right" style="border: 1px solid #000; padding: 6px; text-align: right; color: #000000; text-decoration: none;">
+                                    <td colspan="5" align="right" style="border: 1px solid #000; padding: 6px; text-align: right;">
                                         ИТОГО ПО ЗАКАЗУ:
                                     </td>
-                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">
+                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">
                                         {{ grandTotal }}
                                     </td>
-                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center; color: #000000; text-decoration: none;">
+                                    <td align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">
                                         {{ maxDeliveryTime }}
                                     </td>
-                                    <td class="no-copy" style="border: 1px solid #000; padding: 6px;"></td>
+                                    <td style="border: 1px solid #000; padding: 6px;"></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -858,17 +857,16 @@
 </div>
 
 <script>
-// Блокировка вызова исходного кода и DevTools (Ctrl+U, F12, Ctrl+Shift+I)
 document.addEventListener('keydown', function(e) {
-    if (e.keyCode === 123) { // F12
+    if (e.keyCode === 123) {
         e.preventDefault();
         return false;
     }
-    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 117)) { // Ctrl+U
+    if (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 117)) {
         e.preventDefault();
         return false;
     }
-    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) { // Ctrl+Shift+I / J / C
+    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
         e.preventDefault();
         return false;
     }
@@ -938,8 +936,7 @@ Vue.component('paper-selector', {
 var app = new Vue({
     el: '#app',
     data: {
-        // ВСТАВЬТЕ СЮДА URL РАЗВЕРТЫВАНИЯ ИЗ APPS SCRIPT:
-        googleScriptUrl: 'https://script.google.com/macros/s/AKfycbzsBY3ZFVSjD24mpL02CQbuJohjVW97iUxP6GuZDeIOmzLoJ_zb__9wzMbBVH0KPDLx/exec', 
+        googleScriptUrl: '', 
 
         isSyncing: false,
 
@@ -1483,8 +1480,7 @@ var app = new Vue({
                     let bTonerUsdLump = b.toner !== 'none' ? (Number(b.toner_usd) || 0) * this.config.usd_rate : 0;
 
                     let bCostPerSheet = bPaperPrice + bColorPrice + bLamPrice + bTonerRunsC;
-                    totalBlocksCost += (bSra3Sheets * bCostPerSheet) + bTonerUsdLump;
-                }
+                    totalBlocksCost += (bSra3Sheets * bCostPerSheet) + bTonerUsdLump;                }
 
                 let bindCostPerItem = 500 + Math.max(0, totalPresSheetsPerItem - 20) * 1;
                 let totalBindCost = bindCostPerItem * this.selected.circulation;
@@ -1929,7 +1925,7 @@ var app = new Vue({
             it.title = title;
             it.desc = desc;
             it.circulation = this.selected.circulation;
-            it.one_total = this.result_price.one_total,
+            it.one_total = this.result_price.one_total;
             it.total = this.result_price.total;
             it.delivery = this.delivery_time;
             it.specData = JSON.parse(JSON.stringify(this.selected));
@@ -1992,76 +1988,129 @@ var app = new Vue({
             }
         },
 
-        // УЛУЧШЕННОЕ КОПИРОВАНИЕ ДЛЯ WORD И EXCEL С ПОЛНОЙ БЛОКИРОВКОЙ СИНЕГО ТЕКСТА
-        copyTable: function(type) {
+        // ГЕНЕРАЦИЯ ЧИСТОГО HTML ДЛЯ WORD / EXCEL
+        generateWordTableHtml: function() {
+            let comp = this.companyName ? this.companyName.trim().toUpperCase() : 'БЕЗ НАЗВАНИЯ';
+            let title = `КП ${this.currentDateFormatted} ${comp}`;
+            
+            let rowsHtml = '';
+            this.savedItems.forEach((it, idx) => {
+                rowsHtml += `
+                <tr>
+                    <td align="center" valign="middle" style="border: 1px solid #000000; padding: 6px; text-align: center; vertical-align: middle; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif; font-size: 13px;">
+                        <span style="color: #000000; text-decoration: none;">${idx + 1}</span>
+                    </td>
+                    <td align="center" valign="middle" style="border: 1px solid #000000; padding: 6px; text-align: center; vertical-align: middle; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif; font-size: 13px;">
+                        <strong style="color: #000000; text-decoration: none;">${it.title}</strong>
+                    </td>
+                    <td align="left" valign="top" style="border: 1px solid #000000; padding: 6px; text-align: left; vertical-align: top; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif; font-size: 13px;">
+                        <span style="color: #000000; text-decoration: none;">${it.desc}</span>
+                    </td>
+                    <td align="center" valign="middle" style="border: 1px solid #000000; padding: 6px; text-align: center; vertical-align: middle; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif; font-size: 13px;">
+                        <span style="color: #000000; text-decoration: none;">${it.circulation}</span>
+                    </td>
+                    <td align="center" valign="middle" style="border: 1px solid #000000; padding: 6px; text-align: center; vertical-align: middle; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif; font-size: 13px;">
+                        <span style="color: #000000; text-decoration: none;">${it.one_total}</span>
+                    </td>
+                    <td align="center" valign="middle" style="border: 1px solid #000000; padding: 6px; text-align: center; vertical-align: middle; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif; font-size: 13px;">
+                        <strong style="color: #000000; text-decoration: none;">${it.total}</strong>
+                    </td>
+                    <td align="center" valign="middle" style="border: 1px solid #000000; padding: 6px; text-align: center; vertical-align: middle; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif; font-size: 13px;">
+                        <span style="color: #000000; text-decoration: none;">${it.delivery || '-'}</span>
+                    </td>
+                </tr>`;
+            });
+
+            return `
+            <table width="100%" border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; border: 1px solid #000000; font-family: 'Times New Roman', Times, serif; font-size: 13px; color: #000000; text-decoration: none;">
+                <colgroup>
+                    <col width="5%">
+                    <col width="16%">
+                    <col width="34%">
+                    <col width="10%">
+                    <col width="12%">
+                    <col width="12%">
+                    <col width="11%">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th colspan="7" align="center" style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #f2f2f2; font-size: 15px; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">
+                            <strong style="color: #000000; text-decoration: none;">${title}</strong>
+                        </th>
+                    </tr>
+                    <tr style="background-color: #f9f9f9;">
+                        <th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">№</th>
+                        <th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">Наименование</th>
+                        <th align="left" style="border: 1px solid #000000; padding: 6px; text-align: left; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">Данные</th>
+                        <th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">Кол-во / шт</th>
+                        <th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">Стоимость за единицу / теңге</th>
+                        <th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">Итого / теңге</th>
+                        <th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">Срок / рабочие дни</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+                <tfoot>
+                    <tr style="background-color: #f9f9f9; font-weight: bold;">
+                        <td colspan="5" align="right" style="border: 1px solid #000000; padding: 6px; text-align: right; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">
+                            <strong style="color: #000000; text-decoration: none;">ИТОГО ПО ЗАКАЗУ:</strong>
+                        </td>
+                        <td align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">
+                            <strong style="color: #000000; text-decoration: none;">${this.grandTotal}</strong>
+                        </td>
+                        <td align="center" style="border: 1px solid #000000; padding: 6px; text-align: center; color: #000000; text-decoration: none; font-family: 'Times New Roman', Times, serif;">
+                            <span style="color: #000000; text-decoration: none;">${this.maxDeliveryTime}</span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>`;
+        },
+
+        generatePlainText: function() {
+            let comp = this.companyName ? this.companyName.trim().toUpperCase() : 'БЕЗ НАЗВАНИЯ';
+            let text = `КП ${this.currentDateFormatted} ${comp}\n`;
+            text += "№\tНаименование\tДанные\tКол-во / шт\tСтоимость за единицу / теңге\tИтого / теңге\tСрок / рабочие дни\n";
+            this.savedItems.forEach((it, i) => {
+                let cleanDesc = it.desc.replace(/<br\s*[\/]?>/gi, ", ").replace(/<[^>]+>/g, "");
+                text += `${i + 1}\t${it.title}\t${cleanDesc}\t${it.circulation}\t${it.one_total}\t${it.total}\t${it.delivery}\n`;
+            });
+            text += `ИТОГО ПО ЗАКАЗУ:\t\t\t\t\t${this.grandTotal}\t${this.maxDeliveryTime}\n`;
+            return text;
+        },
+
+        fallbackCopy: function(html, plain) {
+            let handler = function(e) {
+                e.clipboardData.setData('text/html', html);
+                e.clipboardData.setData('text/plain', plain);
+                e.preventDefault();
+            };
+            document.addEventListener('copy', handler);
+            document.execCommand('copy');
+            document.removeEventListener('copy', handler);
+        },
+
+        // БЕЗОПАСНОЕ КОПИРОВАНИЕ ДЛЯ WORD БЕЗ СМЕЩЕНИЙ И СИНИХ ТЕКСТОВ
+        copyTable: function() {
             if (this.savedItems.length === 0) return;
 
-            let original = this.$refs.copyTable;
-            let clone = original.cloneNode(true);
-            
-            // Удаляем колонку действий
-            let noCopyElements = clone.querySelectorAll('.no-copy');
-            noCopyElements.forEach(el => el.remove());
+            let html = this.generateWordTableHtml();
+            let plain = this.generatePlainText();
 
-            // Заголовок объединяем строго на 7 колонок
-            let mainHeader = clone.querySelector('thead tr:first-child th');
-            if (mainHeader) {
-                mainHeader.setAttribute('colspan', '7');
+            if (navigator.clipboard && window.ClipboardItem) {
+                let htmlBlob = new Blob([html], { type: 'text/html' });
+                let textBlob = new Blob([plain], { type: 'text/plain' });
+                navigator.clipboard.write([
+                    new ClipboardItem({
+                        'text/html': htmlBlob,
+                        'text/plain': textBlob
+                    })
+                ]).catch(() => {
+                    this.fallbackCopy(html, plain);
+                });
+            } else {
+                this.fallbackCopy(html, plain);
             }
-
-            // Жёстко задаём ширину колонок в процентах
-            let colWidths = ['5%', '16%', '33%', '10%', '12%', '12%', '12%'];
-            let ths = clone.querySelectorAll('thead tr:nth-child(2) th');
-            ths.forEach((th, i) => {
-                if (colWidths[i]) th.setAttribute('width', colWidths[i]);
-            });
-
-            // Очищаем ВСЕ элементы от веб-классов и форсируем строгий чёрный цвет без подчёркиваний
-            let allElements = clone.querySelectorAll('*');
-            allElements.forEach(el => {
-                el.removeAttribute('contenteditable');
-                el.classList.remove('editable-cell', 'clickable-row-num', 'bg-warning');
-                el.style.color = '#000000';
-                el.style.textDecoration = 'none';
-                el.style.fontFamily = "'Times New Roman', Times, serif";
-
-                if (el.tagName === 'TH' || el.tagName === 'TD') {
-                    el.style.border = '1px solid #000000';
-                    el.style.color = '#000000';
-                    el.style.textDecoration = 'none';
-                    el.style.fontFamily = "'Times New Roman', Times, serif";
-                }
-            });
-
-            clone.style.borderCollapse = 'collapse';
-            clone.style.width = '100%';
-            clone.style.color = '#000000';
-            clone.style.textDecoration = 'none';
-            clone.style.fontFamily = "'Times New Roman', Times, serif";
-
-            // Оборачиваем в контейнер, сбрасывающий родительские стили Word (гиперссылки)
-            let wrapper = document.createElement('div');
-            wrapper.style.color = '#000000';
-            wrapper.style.textDecoration = 'none';
-            wrapper.style.fontFamily = "'Times New Roman', Times, serif";
-            wrapper.style.position = 'absolute';
-            wrapper.style.left = '-9999px';
-            wrapper.style.top = '0';
-            wrapper.appendChild(clone);
-            document.body.appendChild(wrapper);
-
-            let range = document.createRange();
-            range.selectNode(wrapper);
-            let sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-            try {
-                document.execCommand('copy');
-            } catch (err) {
-                console.error(err);
-            }
-            sel.removeAllRanges();
-            document.body.removeChild(wrapper);
 
             let summaryTitles = this.savedItems.map(i => `${i.title} (${i.circulation} шт)`).join(', ');
             let targetId = this.currentLoadedHistoryId || Date.now();
@@ -2101,7 +2150,7 @@ var app = new Vue({
                 .finally(() => { this.isSyncing = false; });
             }
 
-            this.showNotification(isUpdate ? 'КП обновлено в таблице и истории!' : 'КП скопировано и сохранено онлайн!');
+            this.showNotification(isUpdate ? 'КП обновлено в истории и скопировано!' : 'КП скопировано для Word и сохранено!');
         },
 
         loadFromHistory: function(record) {
