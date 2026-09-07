@@ -691,11 +691,11 @@
                             📋 Скопировать КП для Word / Excel
                         </button>
                         
-                        <!-- ПЕРЕНЕСЕННАЯ ГАЛОЧКА НДС СПРАВА ОТ СКОПИРОВАТЬ КП -->
-                        <div class="custom-control custom-checkbox bg-white px-2 py-1 border rounded shadow-sm">
+                        <!-- КОМПАКТНАЯ ГАЛОЧКА НДС СПРАВА ОТ СКОПИРОВАТЬ КП -->
+                        <div class="custom-control custom-checkbox bg-white border rounded shadow-sm py-1 pr-2 ml-1" style="white-space: nowrap;">
                             <input type="checkbox" class="custom-control-input" id="vatToggleCheck" v-model="includeVat">
-                            <label class="custom-control-label font-weight-bold user-select-none text-dark" for="vatToggleCheck" style="cursor: pointer; padding-top: 2px;">
-                                НДС (16%)
+                            <label class="custom-control-label font-weight-bold user-select-none text-dark" for="vatToggleCheck" style="cursor: pointer; padding-top: 1px; font-size: 13px;">
+                                НДС
                             </label>
                         </div>
                     </div>
@@ -983,7 +983,7 @@ var app = new Vue({
 
         config: {
             tax: 1.36,
-            vat_rate: 1.16, // Ставка НДС 16%
+            vat_rate: 1.16,
             profit_per_one: 2.3, 
             profit_business_card: 3, 
             margins: 4,
