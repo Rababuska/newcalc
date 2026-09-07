@@ -565,7 +565,7 @@
                                     
                                     <li v-if="result_price.extra_run_cost > 0">Доп. прогон (CMYK): {{ result_price.extra_run_cost }} тг/шт</li>
                                     
-                                    <li v-if="result_price.toner2_runs_cost > 0 || result_price.toner2_usd_lump > 0">Спецтонер 2:
+                                    <li v-if="result_price.toner2_runs_cost > 0 || result_price.toner2_usd_lump > 0">Спецтонер 2: 
                                         <ul class="mb-0 pl-3 text-muted" style="font-size: 0.9em; list-style-type: circle;">
                                             <li>Прогоны (2×): {{ result_price.toner2_runs_cost }} тг/шт</li>
                                             <li v-if="result_price.toner2_usd_lump > 0">Тонер (на тираж): {{ result_price.toner2_usd_lump }} тг</li>
@@ -639,12 +639,12 @@
 
                     <td style="vertical-align: middle; width: 30%;">
                         <div class="mb-2">
-                            Стоимость 1 шт {{ includeVat ? '' : '(без НДС)' }}:<br/> 
+                            Стоимость 1 шт:<br/> 
                             <strong v-if="result_price.doesNotFit" class="text-danger">-</strong>
                             <strong v-else>{{ result_price.one_total }} тг</strong>
                         </div>
                         <div class="p-2 bg-success text-white rounded mb-3" :class="{'bg-danger': result_price.doesNotFit}">
-                            Итого тираж {{ includeVat ? '' : '(без НДС)' }}:<br/>
+                            Итого тираж:<br/>
                             <h4 class="mb-0" v-if="result_price.doesNotFit">НЕ ПОМЕЩАЕТСЯ</h4>
                             <h4 class="mb-0" v-else>{{ result_price.total }} тг</h4>
                         </div>
@@ -678,27 +678,26 @@
                     <div>
                         <h5 class="text-secondary d-inline-block mr-2 mb-0">Таблица коммерческого предложения</h5>
                         <span class="badge badge-info mr-2" style="font-size: 0.9em;">Позиций: {{ savedItems.length }}</span>
-                        
-                        <!-- КНОПКА ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ НДС -->
-                        <div class="custom-control custom-checkbox d-inline-block mr-2 align-middle bg-white px-2 py-1 border rounded shadow-sm">
-                            <input type="checkbox" class="custom-control-input" id="vatToggleCheck" v-model="includeVat">
-                            <label class="custom-control-label font-weight-bold user-select-none text-dark" for="vatToggleCheck" style="cursor: pointer; padding-top: 2px;">
-                                НДС (16%)
-                            </label>
-                        </div>
-
                         <small class="text-muted ml-1 font-italic d-none d-md-inline">(кликните по тексту для быстрой правки)</small>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center">
                         <button class="btn btn-sm btn-outline-success shadow-sm mr-2" @click="addManualItem">
                             ➕ Ввести позицию вручную
                         </button>
                         <button class="btn btn-sm btn-outline-danger shadow-sm mr-2" @click="clearTable" v-if="savedItems.length > 0">
                             Очистить всё
                         </button>
-                        <button class="btn btn-sm btn-primary shadow-sm" @click="copyTable" :disabled="savedItems.length === 0">
+                        <button class="btn btn-sm btn-primary shadow-sm mr-2" @click="copyTable" :disabled="savedItems.length === 0">
                             📋 Скопировать КП для Word / Excel
                         </button>
+                        
+                        <!-- ПЕРЕНЕСЕННАЯ ГАЛОЧКА НДС СПРАВА ОТ СКОПИРОВАТЬ КП -->
+                        <div class="custom-control custom-checkbox bg-white px-2 py-1 border rounded shadow-sm">
+                            <input type="checkbox" class="custom-control-input" id="vatToggleCheck" v-model="includeVat">
+                            <label class="custom-control-label font-weight-bold user-select-none text-dark" for="vatToggleCheck" style="cursor: pointer; padding-top: 2px;">
+                                НДС (16%)
+                            </label>
+                        </div>
                     </div>
                 </div>
                 
@@ -813,7 +812,6 @@
                         📋 История КП: <span class="text-primary">{{ currentManager.name }}</span>
                     </h5>
                     <div>
-                        <!-- КНОПКА "ОБНОВИТЬ" -->
                         <button class="btn btn-sm btn-outline-info mr-2" @click="syncWithGoogleSheets" :disabled="isSyncing || !googleScriptUrl">
                             🔄 {{ isSyncing ? 'Загрузка...' : 'Обновить' }}
                         </button>
@@ -985,7 +983,7 @@ var app = new Vue({
 
         config: {
             tax: 1.36,
-            vat_rate: 1.16,
+            vat_rate: 1.16, // Ставка НДС 16%
             profit_per_one: 2.3, 
             profit_business_card: 3, 
             margins: 4,
@@ -1173,19 +1171,22 @@ var app = new Vue({
         }
     },
     watch: {
-        includeVat: function(newVal, oldVal) {
-            if (newVal === oldVal) return;
+        includeVat: function(newVal) {
             let rate = this.config.vat_rate || 1.16;
             this.savedItems.forEach(item => {
+                if (!item.base_total) {
+                    item.base_total = item.total;
+                    item.base_one_total = item.one_total;
+                }
                 if (newVal) {
-                    item.one_total = Math.round(item.one_total * rate);
-                    item.total = Math.round(item.one_total * item.circulation);
+                    item.total = item.base_total;
+                    item.one_total = item.base_one_total;
                 } else {
-                    item.one_total = Math.round(item.one_total / rate);
-                    item.total = Math.round(item.one_total * item.circulation);
+                    item.total = Math.round(item.base_total / rate);
+                    item.one_total = Math.round(item.total / item.circulation);
                 }
             });
-            this.showNotification(newVal ? 'Цены переведены с учетом НДС' : 'Цены переведены без учета НДС');
+            this.showNotification(newVal ? 'КП переведено с учетом НДС' : 'КП переведено без учета НДС');
         }
     },
     created: function() {
@@ -1588,11 +1589,6 @@ var app = new Vue({
             let productionCostWithTax = productionCost * this.config.tax;
             let costPerPiece = productionCost / this.selected.circulation;
             let unitPrice = Math.ceil((costPerPiece * this.config.tax) * profitMultiplier);
-
-            // УЧЕТ НДС ПРИ РАСЧЕТЕ ЕДИНИЦЫ И ТИРАЖА
-            if (!this.includeVat) {
-                unitPrice = Math.round(unitPrice / (this.config.vat_rate || 1.16));
-            }
             let totalPrice = unitPrice * this.selected.circulation;
 
             return {
@@ -1906,6 +1902,7 @@ var app = new Vue({
             }
             return desc;
         },
+
         addItemToTable: function() {
             if (this.result_price.doesNotFit) {
                 alert('Невозможно добавить позицию: изделие не помещается на лист!');
@@ -1915,13 +1912,22 @@ var app = new Vue({
             let title = this.selected.good === 'presentation' ? (this.selected.presentation_type === 'notebook' ? 'Блокнот' : 'Презентация') : this.goods[this.selected.good].name;
             let desc = this.generatePositionDesc();
 
+            let baseUnitPrice = this.result_price.one_total;
+            let baseTotalPrice = this.result_price.total;
+            let rate = this.config.vat_rate || 1.16;
+
+            let displayTotal = this.includeVat ? baseTotalPrice : Math.round(baseTotalPrice / rate);
+            let displayOne = this.includeVat ? baseUnitPrice : Math.round(displayTotal / this.selected.circulation);
+
             this.savedItems.push({
                 id: this.savedItemCounter++,
                 title: title,
                 desc: desc,
                 circulation: this.selected.circulation,
-                one_total: this.result_price.one_total,
-                total: this.result_price.total,
+                one_total: displayOne,
+                total: displayTotal,
+                base_one_total: baseUnitPrice,
+                base_total: baseTotalPrice,
                 delivery: this.delivery_time,
                 specData: JSON.parse(JSON.stringify(this.selected))
             });
@@ -1957,12 +1963,21 @@ var app = new Vue({
             let title = this.selected.good === 'presentation' ? (this.selected.presentation_type === 'notebook' ? 'Блокнот' : 'Презентация') : this.goods[this.selected.good].name;
             let desc = this.generatePositionDesc();
 
+            let baseUnitPrice = this.result_price.one_total;
+            let baseTotalPrice = this.result_price.total;
+            let rate = this.config.vat_rate || 1.16;
+
+            let displayTotal = this.includeVat ? baseTotalPrice : Math.round(baseTotalPrice / rate);
+            let displayOne = this.includeVat ? baseUnitPrice : Math.round(displayTotal / this.selected.circulation);
+
             let it = this.savedItems[this.editingIndex];
             it.title = title;
             it.desc = desc;
             it.circulation = this.selected.circulation;
-            it.one_total = this.result_price.one_total;
-            it.total = this.result_price.total;
+            it.base_one_total = baseUnitPrice;
+            it.base_total = baseTotalPrice;
+            it.one_total = displayOne;
+            it.total = displayTotal;
             it.delivery = this.delivery_time;
             it.specData = JSON.parse(JSON.stringify(this.selected));
 
@@ -1980,13 +1995,21 @@ var app = new Vue({
         },
 
         addManualItem: function() {
+            let baseTotal = 1000;
+            let baseOne = 1000;
+            let rate = this.config.vat_rate || 1.16;
+            let displayTotal = this.includeVat ? baseTotal : Math.round(baseTotal / rate);
+            let displayOne = this.includeVat ? baseOne : Math.round(displayTotal / 1);
+
             this.savedItems.push({
                 id: this.savedItemCounter++,
                 title: 'Индивидуальная позиция / Услуга',
                 desc: 'Описание параметров (кликните для изменения)',
                 circulation: 1,
-                one_total: this.includeVat ? 1000 : Math.round(1000 / (this.config.vat_rate || 1.16)),
-                total: this.includeVat ? 1000 : Math.round(1000 / (this.config.vat_rate || 1.16)),
+                one_total: displayOne,
+                total: displayTotal,
+                base_one_total: baseOne,
+                base_total: baseTotal,
                 delivery: '',
                 specData: null
             });
@@ -1996,12 +2019,19 @@ var app = new Vue({
         onCellBlur: function(evt, idx, field) {
             let val = evt.target.innerText.trim();
             let it = this.savedItems[idx];
+            let rate = this.config.vat_rate || 1.16;
+
             if (field === 'circulation' || field === 'one_total') {
                 let num = parseFloat(val.replace(/\s+/g, '').replace(',', '.')) || 0;
                 it[field] = num;
                 it.total = Math.round(it.circulation * it.one_total);
+                it.base_total = this.includeVat ? it.total : Math.round(it.total * rate);
+                it.base_one_total = this.includeVat ? it.one_total : Math.round(it.base_total / it.circulation);
             } else if (field === 'total') {
                 it.total = parseFloat(val.replace(/\s+/g, '').replace(',', '.')) || 0;
+                it.base_total = this.includeVat ? it.total : Math.round(it.total * rate);
+                it.one_total = Math.round(it.total / (it.circulation || 1));
+                it.base_one_total = Math.round(it.base_total / (it.circulation || 1));
             } else {
                 it[field] = val;
             }
