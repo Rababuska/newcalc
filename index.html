@@ -706,7 +706,7 @@
                             <div><strong>Чистая себестоимость текущего тиража:</strong> {{ result_price.productionCost }} тг</div>
                             <div class="mt-1 text-dark"><strong>Себестоимость с учётом налогов (тек. тираж):</strong> {{ result_price.productionCostWithTax }} тг</div>
 
-                            <!-- ОБЩАЯ РАСХОДНАЯ ЧАСТЬ ВСЕГО КП (С ПЕРЕСЧЕТОМ НА ЛЕТУ) -->
+                            <!-- ОБЩАЯ РАСХОДНАЯ ЧАСТЬ ВСЕГО КП -->
                             <div v-if="nonManualItemsCount > 0" class="mt-3 p-2 bg-white border border-primary rounded shadow-sm">
                                 <div class="text-primary font-weight-bold" style="font-size: 0.95em;">
                                     📊 Расходная часть всего КП (позиций из калькулятора: {{ nonManualItemsCount }}):
@@ -1357,7 +1357,6 @@ var app = new Vue({
             return sum;
         },
 
-        // РАСХОДНАЯ ЧАСТЬ ВСЕГО КП (БЕЗ РУЧНЫХ ПОЗИЦИЙ С ПЕРЕСЧЕТОМ НА ЛЕТУ)
         nonManualItems: function() {
             return this.savedItems.filter(it => !it.isManual && it.specData);
         },
@@ -1576,7 +1575,6 @@ var app = new Vue({
                 .finally(() => { this.isSyncing = false; });
         },
 
-        // РАСКЛАДКА ДЛЯ ЛЮБОГО НАБОРА ДАННЫХ
         calcLayoutForSpec: function(sel) {
             let res = { base: {yield: 1}, cover: {yield: 1}, block: {yield: 1}, presentation: {cover_yield: 1, back_cover_yield: 1, blocks_yield: []}, svg: {paperW: 450, paperH: 320, items: []} };
             
@@ -1644,7 +1642,6 @@ var app = new Vue({
             return res;
         },
 
-        // УНИВЕРСАЛЬНЫЙ РАСЧЕТ СЕБЕСТОИМОСТИ И ЦЕН ДЛЯ ЛЮБОЙ ПОЗИЦИИ
         calcPriceForSpec: function(sel) {
             let profitMultiplier = sel.good === 'business-card' ? this.config.profit_business_card : this.config.profit_per_one;
             let doesNotFit = false;
@@ -1689,7 +1686,6 @@ var app = new Vue({
 
             let lay = this.calcLayoutForSpec(sel);
 
-            // 1. ПАКЕТЫ (+ 10 ПРИЛАДОЧНЫХ ЛИСТОВ)
             if (sel.good === 'bag') {
                 let paperDef = this.getPaperDefForSpec(sel.paper, sel);
                 let maxL = Math.max(paperDef.w, paperDef.h);
@@ -1754,7 +1750,6 @@ var app = new Vue({
                     cal: calDetails
                 };
             }
-            // 2. КАЛЕНДАРИ НАСТОЛЬНЫЕ
             else if (sel.good === 'calendar') {
                 let pCount = Number(sel.calendar_sheets) || 7;
                 let blockSra3Sheets = Math.ceil((sel.circulation * pCount) / 4);
@@ -1818,7 +1813,6 @@ var app = new Vue({
                     totalPrice = unitPrice * sel.circulation;
                 }
             }
-            // 3. КОНВЕРТЫ
             else if (sel.good === 'envelope') {
                 let sheets = sel.circulation;
                 totalPapersCount = sheets;
@@ -1830,7 +1824,6 @@ var app = new Vue({
                 unitPrice = Math.ceil((costPerPiece * this.config.tax) * profitMultiplier);
                 totalPrice = unitPrice * sel.circulation;
             } 
-            // 4. ПРЕЗЕНТАЦИИ
             else if (sel.good === 'presentation') {
                 let yCover = lay.presentation.cover_yield || 1;
                 let yBack = lay.presentation.back_cover_yield || 1;
@@ -1902,7 +1895,6 @@ var app = new Vue({
                 unitPrice = Math.ceil((costPerPiece * this.config.tax) * profitMultiplier);
                 totalPrice = unitPrice * sel.circulation;
             }
-            // 5. ЛИСТОВКИ, ВИЗИТКИ, НАКЛЕЙКИ
             else if (sel.good !== 'brochure') {
                 let y = lay.base.yield || 1;
                 if (lay.base.yield === 0) doesNotFit = true;
@@ -1928,7 +1920,6 @@ var app = new Vue({
                 unitPrice = Math.ceil((costPerPiece * this.config.tax) * profitMultiplier);
                 totalPrice = unitPrice * sel.circulation;
             } 
-            // 6. БРОШЮРЫ
             else {
                 if (lay.cover.yield === 0) doesNotFit = true;
                 if (sel.pages_count > 4 && lay.block.yield === 0) doesNotFit = true;
@@ -2049,6 +2040,7 @@ var app = new Vue({
             return { w: this.sizes[sel.good][sel.size].w, h: this.sizes[sel.good][sel.size].h };
         },
 
+        // ИСПРАВЛЕННЫЙ МЕТОД ВОССТАНОВЛЕНИЯ ПОЗИЦИИ ИЗ СТРОКИ
         restoreSpecFromItem: function(item) {
             let spec = JSON.parse(JSON.stringify(this.selected));
             spec.circulation = Number(item.circulation) || 100;
@@ -2092,6 +2084,72 @@ var app = new Vue({
                 spec.good = 'envelope';
             } else if (title.includes('стикер') || title.includes('наклейк')) {
                 spec.good = 'sticker';
+            }
+
+            // ПАРСИНГ ДЛЯ БРОШЮР
+            if (spec.good === 'brochure') {
+                let pMatch = desc.match(/(\d+)\s*стр/i);
+                if (pMatch) spec.pages_count = parseInt(pMatch[1]);
+
+                if (desc.includes('Альбомная') || desc.includes('горизонтальная')) {
+                    spec.orientation = 'landscape';
+                } else if (desc.includes('Книжная') || desc.includes('вертикальная')) {
+                    spec.orientation = 'portrait';
+                }
+
+                for (let sKey in this.sizes.brochure) {
+                    let sName = this.sizes.brochure[sKey].name.toLowerCase().split(' ')[0];
+                    if (desc.toLowerCase().includes(sName)) {
+                        spec.size = sKey;
+                        break;
+                    }
+                }
+
+                let coverMatch = desc.match(/обложка:[^<]*/i);
+                if (coverMatch) {
+                    let cText = coverMatch[0];
+                    let colM = cText.match(/(\d\+\d)/);
+                    if (colM && this.colors[colM[1].replace('+', '_')]) {
+                        spec.cover_color = colM[1].replace('+', '_');
+                    }
+                    for (let lKey in this.laminations) {
+                        if (lKey !== 'none' && cText.includes(this.laminations[lKey].name)) {
+                            spec.cover_lamination = lKey;
+                            break;
+                        }
+                    }
+                    for (let pKey in this.papers) {
+                        if (cText.includes(this.papers[pKey].name)) {
+                            spec.cover_paper = pKey;
+                            break;
+                        }
+                    }
+                    if (cText.includes('перфорац')) spec.cover_plotter_cut = 'plotter_perf';
+                    else if (cText.includes('Плоттерная резка')) spec.cover_plotter_cut = 'plotter';
+                }
+
+                let blockMatch = desc.match(/блок:[^<]*/i);
+                if (blockMatch) {
+                    let bText = blockMatch[0];
+                    let colM = bText.match(/(\d\+\d)/);
+                    if (colM && this.colors[colM[1].replace('+', '_')]) {
+                        spec.block_color = colM[1].replace('+', '_');
+                    }
+                    for (let lKey in this.laminations) {
+                        if (lKey !== 'none' && bText.includes(this.laminations[lKey].name)) {
+                            spec.block_lamination = lKey;
+                            break;
+                        }
+                    }
+                    for (let pKey in this.papers) {
+                        if (bText.includes(this.papers[pKey].name)) {
+                            spec.block_paper = pKey;
+                            break;
+                        }
+                    }
+                }
+
+                return spec;
             }
 
             let foundStandard = false;
@@ -2148,6 +2206,7 @@ var app = new Vue({
             return spec;
         },
 
+        // ИСПРАВЛЕННЫЙ МЕТОД ГЕНЕРАЦИИ ОПИСАНИЯ ДЛЯ ТАБЛИЦЫ
         generatePositionDesc: function() {
             let desc = '';
 
@@ -2191,16 +2250,49 @@ var app = new Vue({
                 }
             } else if (this.selected.good === 'envelope') {
                 desc = 'Цветность: ' + this.colors[this.selected.color].name + '<br/>Конверт<br/>';
-            } else if (this.selected.good === 'brochure') {
-                desc = '<strong>Обложка:</strong> ' + this.colors[this.selected.cover_color].name + ', ' + this.laminations[this.selected.cover_lamination].name + ', ' + this.getPaperName(this.selected.cover_paper);
+            } 
+            // БРОШЮРЫ (ВОССТАНОВЛЕНА СТРОКА РАЗМЕРА И СТРАНИЦ)
+            else if (this.selected.good === 'brochure') {
+                desc = 'Размер: ' + this.spec_size + '<br/>' +
+                       '<strong>Обложка:</strong> ' + this.colors[this.selected.cover_color].name + ', ' + this.laminations[this.selected.cover_lamination].name + ', ' + this.getPaperName(this.selected.cover_paper);
                 if (this.selected.cover_plotter_cut !== 'none') desc += ', Плоттерная резка';
                 desc += '<br/>';
                 if (this.selected.pages_count > 4) {
                     desc += '<strong>Блок:</strong> ' + this.colors[this.selected.block_color].name + ', ' + this.laminations[this.selected.block_lamination].name + ', ' + this.getPaperName(this.selected.block_paper) + '<br/>';
                 }
-            } else if (this.selected.good === 'presentation') {
-                desc = '<strong>Обложка:</strong> ' + this.colors[this.selected.cover_color].name + ', ' + this.getPaperName(this.selected.cover_paper) + '<br/>' +
-                       '<strong>Задняя обложка:</strong> ' + this.colors[this.selected.back_cover_color].name + ', ' + this.getPaperName(this.selected.back_cover_paper) + '<br/>';
+                if (this.selected.block_toner && this.selected.block_toner !== 'none') {
+                    desc += 'Спецтонер блока: ' + this.toners[this.selected.block_toner].name + '<br/>';
+                }
+                if (this.selected.toner1 && this.selected.toner1 !== 'none') {
+                    desc += '5-й цвет (Обложка): ' + this.toners[this.selected.toner1].name + '<br/>';
+                }
+                if (this.selected.add_extra_run) {
+                    desc += 'Доп. прогон (Обложка): ' + ((this.selected.toner2 && this.selected.toner2 !== 'none') ? this.toners[this.selected.toner2].name : 'Да (CMYK)') + '<br/>';
+                }
+            } 
+            // ПРЕЗЕНТАЦИИ И БЛОКНОТЫ
+            else if (this.selected.good === 'presentation') {
+                desc = 'Размер: ' + this.spec_size + '<br/>' +
+                       '<strong>Обложка:</strong> ' + this.colors[this.selected.cover_color].name + ', ' + this.laminations[this.selected.cover_lamination].name + ', ' + this.getPaperName(this.selected.cover_paper);
+                if (this.selected.cover_toner !== 'none') desc += ' + ' + this.toners[this.selected.cover_toner].name;
+                if (this.selected.cover_plotter_cut !== 'none') desc += ', Плоттерная резка';
+                desc += '<br/>';
+
+                desc += '<strong>Задняя обложка:</strong> ' + this.colors[this.selected.back_cover_color].name + ', ' + this.laminations[this.selected.back_cover_lamination].name + ', ' + this.getPaperName(this.selected.back_cover_paper);
+                if (this.selected.back_cover_toner !== 'none') desc += ' + ' + this.toners[this.selected.back_cover_toner].name;
+                if (this.selected.back_cover_plotter_cut !== 'none') desc += ', Плоттерная резка';
+                desc += '<br/>';
+
+                if (this.selected.presentation_blocks && this.selected.presentation_blocks.length > 0) {
+                    desc += '<strong>Внутренние блоки:</strong><br/>';
+                    for (let i = 0; i < this.selected.presentation_blocks.length; i++) {
+                        let b = this.selected.presentation_blocks[i];
+                        desc += '&nbsp;&nbsp;&nbsp;- Блок ' + (i + 1) + ' (' + b.sheets + ' л.): ' + this.colors[b.color].name + ', ' + this.laminations[b.lamination].name + ', ' + this.getPaperName(b.paper);
+                        if (b.toner !== 'none') desc += ' + ' + this.toners[b.toner].name;
+                        desc += '<br/>';
+                    }
+                }
+                desc += 'Сборка на металлическую пружину (' + (this.selected.binding_edge === 'short' ? 'по короткой стороне' : 'по длинной стороне') + ')<br/>';
             }
 
             return desc;
@@ -2554,7 +2646,6 @@ var app = new Vue({
             }
             this.companyName = record.company || '';
             
-            // ДИНАМИЧЕСКИЙ ПЕРЕСЧЕТ СЕБЕСТОИМОСТИ СТАРЫХ ПОЗИЦИЙ НА ЛЕТУ
             let items = JSON.parse(JSON.stringify(record.items || []));
             items.forEach(it => {
                 if (it.specData && (!it.productionCost || it.productionCost === 0)) {
