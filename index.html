@@ -307,7 +307,7 @@
                                 </div>
                             </div>
 
-                            <!-- ВЫБОР СБОРКИ ПАКЕТА -->
+                            <!-- ВЫБОР СБОРКИ ПАКЕТА (ДЛЯ ВНУТРЕННЕГО РАСЧЕТА) -->
                             <div class="col-12 mt-2 pt-2 border-top" v-if="selected.good === 'bag'">
                                 <div class="row align-items-center">
                                     <div class="col-md-6">
@@ -650,7 +650,7 @@
                         <div class="text-secondary" style="font-size: 0.9em;">
                             <strong>Общий расход листов на позицию:</strong> {{ result_price.totalPapersCount }} шт.<br/>
                             
-                            <!-- СЕБЕСТОИМОСТЬ ПАКЕТА -->
+                            <!-- СЕБЕСТОИМОСТЬ ПАКЕТА (ДЛЯ МЕНЕДЖЕРА) -->
                             <div v-if="selected.good === 'bag'">
                                 <strong>Себестоимость 1 пакета:</strong> {{ result_price.totalCostPerSheet }} тг
                                 <ul class="mb-1 pl-3" style="font-size: 0.95em;">
@@ -821,44 +821,44 @@
                                 <tr v-for="(item, idx) in savedItems" :key="item.id" :class="{'bg-warning': editingIndex === idx}">
                                     <td align="center" 
                                         valign="middle" 
-                                        style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;"
-                                        class="clickable-row-num"
-                                        title="Нажмите, чтобы править эту позицию в калькуляторе"
+                                        style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;" 
+                                        class="clickable-row-num" 
+                                        title="Нажмите, чтобы править эту позицию в калькуляторе" 
                                         @click="editItem(idx)">
                                         {{ idx + 1 }}
                                     </td>
                                     <td contenteditable="true" 
-                                        @blur="onCellBlur($event, idx, 'title')"
-                                        class="editable-cell"
+                                        @blur="onCellBlur($event, idx, 'title')" 
+                                        class="editable-cell" 
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         <strong>{{ item.title }}</strong>
                                     </td>
                                     <td contenteditable="true" 
-                                        @blur="onDescBlur($event, idx)"
-                                        class="editable-cell"
+                                        @blur="onDescBlur($event, idx)" 
+                                        class="editable-cell" 
                                         valign="top" style="border: 1px solid #000; padding: 6px; vertical-align: top;" v-html="item.desc">
                                     </td>
                                     <td contenteditable="true" 
-                                        @blur="onCellBlur($event, idx, 'circulation')"
-                                        class="editable-cell"
+                                        @blur="onCellBlur($event, idx, 'circulation')" 
+                                        class="editable-cell" 
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         {{ item.circulation }}
                                     </td>
                                     <td contenteditable="true" 
-                                        @blur="onCellBlur($event, idx, 'one_total')"
-                                        class="editable-cell"
+                                        @blur="onCellBlur($event, idx, 'one_total')" 
+                                        class="editable-cell" 
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         {{ item.one_total }}
                                     </td>
                                     <td contenteditable="true" 
-                                        @blur="onCellBlur($event, idx, 'total')"
-                                        class="editable-cell"
+                                        @blur="onCellBlur($event, idx, 'total')" 
+                                        class="editable-cell" 
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         <strong>{{ item.total }}</strong>
                                     </td>
                                     <td contenteditable="true" 
-                                        @blur="onCellBlur($event, idx, 'delivery')"
-                                        class="editable-cell"
+                                        @blur="onCellBlur($event, idx, 'delivery')" 
+                                        class="editable-cell" 
                                         align="center" valign="middle" style="border: 1px solid #000; padding: 6px; text-align: center; vertical-align: middle;">
                                         {{ item.delivery }}
                                     </td>
@@ -2040,7 +2040,6 @@ var app = new Vue({
             return { w: this.sizes[sel.good][sel.size].w, h: this.sizes[sel.good][sel.size].h };
         },
 
-        // ИСПРАВЛЕННЫЙ МЕТОД ВОССТАНОВЛЕНИЯ ПОЗИЦИИ ИЗ СТРОКИ
         restoreSpecFromItem: function(item) {
             let spec = JSON.parse(JSON.stringify(this.selected));
             spec.circulation = Number(item.circulation) || 100;
@@ -2052,7 +2051,7 @@ var app = new Vue({
                 spec.good = 'bag';
                 if (desc.includes('350')) spec.bag_size = 'bag_350_225_80';
                 else if (desc.includes('250')) spec.bag_size = 'bag_250_200_80';
-                spec.bag_production = (desc.includes('Барвит') || desc.includes('Эксклюзив')) ? 'barvit' : 'plotter';
+                spec.bag_production = (desc.includes('Барвит') || desc.includes('Эксклюзив') || desc.includes('вырубка') || desc.includes('Вырубка')) ? 'barvit' : 'plotter';
             } else if (title.includes('календар')) {
                 spec.good = 'calendar';
                 if (desc.includes('14 листов') || desc.includes('14 л.')) spec.calendar_sheets = 14;
@@ -2206,18 +2205,21 @@ var app = new Vue({
             return spec;
         },
 
-        // ИСПРАВЛЕННЫЙ МЕТОД ГЕНЕРАЦИИ ОПИСАНИЯ ДЛЯ ТАБЛИЦЫ
+        // ГЕНЕРАЦИЯ ОПИСАНИЯ ДЛЯ ТАБЛИЦЫ КП КЛИЕНТА
         generatePositionDesc: function() {
             let desc = '';
 
-            // ПАКЕТЫ
+            // ПАКЕТЫ (ТОЛЬКО ТЕХНИЧЕСКАЯ ИНФОРМАЦИЯ)
             if (this.selected.good === 'bag') {
-                let prodTitle = (this.selected.bag_production === 'barvit') ? 'Сборка в ИП Эксклюзив (Барвит)' : 'Плоттерная резка и сборка у нас';
+                let prodTitle = (this.selected.bag_production === 'barvit') 
+                    ? 'вырубка, сборка пакета, люверсы, веревочные ручки' 
+                    : 'плоттерная резка, сборка пакета, люверсы, веревочные ручки';
+
                 desc = 'Размер: ' + this.spec_size + '<br/>' +
                        'Цветность: ' + this.colors[this.selected.color].name + '<br/>' +
                        'Припресс: ' + this.laminations[this.selected.lamination].name + '<br/>' +
                        'Бумага: ' + this.spec_paper + '<br/>' +
-                       'Изготовление / сборка: ' + prodTitle + '<br/>';
+                       'Сборка: ' + prodTitle + '<br/>';
             }
             // КАЛЕНДАРИ
             else if (this.selected.good === 'calendar') {
@@ -2251,7 +2253,7 @@ var app = new Vue({
             } else if (this.selected.good === 'envelope') {
                 desc = 'Цветность: ' + this.colors[this.selected.color].name + '<br/>Конверт<br/>';
             } 
-            // БРОШЮРЫ (ВОССТАНОВЛЕНА СТРОКА РАЗМЕРА И СТРАНИЦ)
+            // БРОШЮРЫ
             else if (this.selected.good === 'brochure') {
                 desc = 'Размер: ' + this.spec_size + '<br/>' +
                        '<strong>Обложка:</strong> ' + this.colors[this.selected.cover_color].name + ', ' + this.laminations[this.selected.cover_lamination].name + ', ' + this.getPaperName(this.selected.cover_paper);
