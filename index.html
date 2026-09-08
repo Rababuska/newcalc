@@ -271,7 +271,7 @@
                         <input class="form-control mb-2" v-model.number="selected.circulation" type="number" min="1">
                         
                         <div v-if="selected.good === 'brochure'">
-                            <label>Страниц (кратно 4)</label>
+                            <label>Страниц (включая обложку)</label>
                             <input class="form-control form-control-sm" v-model.number="selected.pages_count" @change="validatePages" type="number" min="4" step="4">
                         </div>
                     </td>
