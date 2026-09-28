@@ -300,7 +300,6 @@
                         <div v-if="selected.good !== 'brochure' && selected.good !== 'presentation' && selected.good !== 'pad' && selected.good !== 'calendar'" class="row m-0 p-2">
                             <div class="col-4 pl-0">
                                 <label>Цветность</label>
-                                <!-- Разблокировано для стикеров: доступны 4+0 и 1+0 -->
                                 <select class="form-control form-control-sm" v-model="selected.color" :disabled="selected.good === 'envelope'">
                                     <option v-for="(item, key) in available_colors" :key="key" :value="key">{{ item.name }}</option>
                                 </select>
@@ -974,10 +973,10 @@
                                     <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">№</th>
                                     <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Наименование</th>
                                     <th align="left" style="border: 1px solid #000; padding: 6px; text-align: left;">Данные</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Кол-во</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Цена/шт</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Итого</th>
-                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Срок</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Кол-во /<br>шт</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Стоимость за единицу /<br>теңге</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Итого /<br>теңге</th>
+                                    <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center;">Срок /<br>рабочие дни</th>
                                     <th align="center" style="border: 1px solid #000; padding: 6px; text-align: center; width: 75px;">Действия</th>
                                 </tr>
                             </thead>
