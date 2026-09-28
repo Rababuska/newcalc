@@ -13,16 +13,16 @@ const PdfGenerator = {
         let comp = companyName ? companyName.trim().toUpperCase() : 'БЕЗ НАЗВАНИЯ';
         let vatLabel = includeVat ? 'с учетом НДС' : 'без учета НДС';
 
-        // 1. Формируем шапку таблицы
+        // 1. Формируем шапку таблицы с единицами измерения
         let tableBody = [
             [
                 { text: '№', style: 'tableHeader' },
                 { text: 'Наименование', style: 'tableHeader' },
                 { text: 'Данные', style: 'tableHeader' },
-                { text: 'Кол-во', style: 'tableHeader' },
-                { text: 'Цена/шт', style: 'tableHeader' },
-                { text: 'Итого', style: 'tableHeader' },
-                { text: 'Срок', style: 'tableHeader' }
+                { text: 'Кол-во /\nшт', style: 'tableHeader' },
+                { text: 'Стоимость за единицу /\nтеңге', style: 'tableHeader' },
+                { text: 'Итого /\nтеңге', style: 'tableHeader' },
+                { text: 'Срок /\nрабочие дни', style: 'tableHeader' }
             ]
         ];
 
@@ -89,7 +89,7 @@ const PdfGenerator = {
                 {
                     table: {
                         headerRows: 1,
-                        widths: ['auto', '18%', '*', 'auto', '11%', '13%', '10%'],
+                        widths: ['auto', '17%', '*', 'auto', '13%', '11%', '11%'],
                         body: tableBody
                     },
                     layout: {
