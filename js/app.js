@@ -219,7 +219,6 @@ var app = new Vue({
             return bestRange || '-';
         },
         available_colors: function() {
-            // Для пакетов и стикеров доступны только односторонние варианты (4+0 и 1+0)
             if (this.selected.good === 'bag' || this.selected.good === 'sticker') {
                 return { 
                     '4_0': { name: '4+0 (Полноцветная)' }, 
@@ -365,7 +364,6 @@ var app = new Vue({
         }
     },
     methods: {
-        // Форматирование даты из формата ISO (2026-09-21T19:00:00.000Z) в 21.09.2026[cite: 2]
         formatDate: function(val) {
             if (!val) return '';
             if (typeof val === 'string' && val.includes('T')) {
@@ -379,7 +377,6 @@ var app = new Vue({
             return val;
         },
 
-        // Сжатие картинки из буфера обмена (до 600px JPEG)[cite: 3]
         processAndSetPhoto: function(source, idx) {
             let self = this;
             let handleImg = function(img) {
@@ -436,12 +433,10 @@ var app = new Vue({
             }
         },
 
-        // Универсальный обработчик вставки: чистит стили Word и перехватывает картинки через Ctrl+V[cite: 3, 4]
         onPasteClean: function(evt, idx, field) {
             let clipboard = evt.clipboardData || window.clipboardData;
             if (!clipboard) return;
 
-            // 1. Проверяем наличие файла изображения в буфере (скриншот, скопированный файл)[cite: 3]
             let items = clipboard.items;
             let imageFile = null;
             if (items) {
@@ -465,7 +460,6 @@ var app = new Vue({
                 return;
             }
 
-            // Проверяем, скопирована ли картинка с сайта как HTML-тег <img>[cite: 3]
             let html = clipboard.getData('text/html');
             if (field === 'title' && html && html.includes('<img')) {
                 let imgMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -482,7 +476,6 @@ var app = new Vue({
                 }
             }
 
-            // 2. Обычная текстовая вставка[cite: 4]
             evt.preventDefault();
             let text = clipboard.getData('text/plain');
 
@@ -491,7 +484,6 @@ var app = new Vue({
                 return;
             }
 
-            // Для описания чистим HTML от шрифтов и инлайн-стилей Word, сохраняя <b>, <i>, <br>[cite: 4]
             if (html) {
                 let parser = new DOMParser();
                 let doc = parser.parseFromString(html, 'text/html');
@@ -515,7 +507,6 @@ var app = new Vue({
             }
         },
 
-        // Удаление фото позиции
         removeItemPhoto: function(idx) {
             this.$set(this.savedItems[idx], 'photo', null);
             this.showNotification('Фото удалено');
@@ -834,10 +825,10 @@ var app = new Vue({
                         '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">№</th>' +
                         '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Наименование</th>' +
                         '<th align="left" style="border: 1px solid #000000; padding: 6px; text-align: left;">Данные</th>' +
-                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Кол-во / шт</th>' +
-                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Стоимость за единицу / теңге</th>' +
-                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Итого / теңге</th>' +
-                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Срок / рабочие дни</th>' +
+                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Кол-во /<br>шт</th>' +
+                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Стоимость за единицу /<br>теңге</th>' +
+                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Итого /<br>теңге</th>' +
+                        '<th align="center" style="border: 1px solid #000000; padding: 6px; text-align: center;">Срок /<br>рабочие дни</th>' +
                     '</tr>' +
                 '</thead>' +
                 '<tbody>' + rowsHtml + '</tbody>' +
@@ -856,9 +847,9 @@ var app = new Vue({
             this.savedItems.forEach(function(it, idx) {
                 text += (idx + 1) + '. ' + it.title + '\n';
                 text += it.desc.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>?/gm, '') + '\n';
-                text += 'Кол-во: ' + it.circulation + ' шт. | Цена: ' + it.one_total + ' тг | Итого: ' + it.total + ' тг | Срок: ' + (it.delivery ? it.delivery : '-') + '\n\n';
+                text += 'Кол-во: ' + it.circulation + ' шт. | Цена: ' + it.one_total + ' теңге | Итого: ' + it.total + ' теңге | Срок: ' + (it.delivery ? it.delivery + ' рабочих дней' : '-') + '\n\n';
             });
-            text += 'ИТОГО ПО ЗАКАЗУ: ' + this.grandTotal + ' тг\nСрок: ' + this.maxDeliveryTime;
+            text += 'ИТОГО ПО ЗАКАЗУ: ' + this.grandTotal + ' теңге\nСрок: ' + this.maxDeliveryTime + (this.maxDeliveryTime !== '-' && !this.maxDeliveryTime.includes('уточнить') && !this.maxDeliveryTime.includes('раб') ? ' рабочих дней' : '');
             return text;
         },
         saveCurrentToHistory: function() {
